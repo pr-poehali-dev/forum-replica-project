@@ -67,7 +67,7 @@ export default function Index() {
                 <Icon name="MessageSquare" size={24} className="text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-foreground">Black Russia Forum</h1>
+                <h1 className="text-xl font-bold text-foreground">TVER RUSSIAN Forum</h1>
                 <p className="text-xs text-muted-foreground">Сообщество игроков</p>
               </div>
             </div>
@@ -337,7 +337,7 @@ export default function Index() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-muted-foreground text-sm">
               <Icon name="Copyright" size={16} />
-              <span>2024 Black Russia Forum. Все права защищены.</span>
+              <span>2024 TVER RUSSIAN Forum. Все права защищены.</span>
             </div>
             <div className="flex gap-4">
               <Button variant="ghost" size="sm" className="gap-2">
