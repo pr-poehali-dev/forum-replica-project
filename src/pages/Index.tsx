@@ -51,14 +51,7 @@ const mockTopics: Topic[] = [
   { id: 5, title: 'Баг с оружием в последнем обновлении', author: 'BugHunter', category: 'Баги', replies: 34, views: 445, lastPost: '30 мин назад' },
 ];
 
-const mockUsers: User[] = [
-  { id: 1, username: 'Admin', avatar: 'A', posts: 1520, reputation: 999, role: 'Администратор', isOnline: true },
-  { id: 2, username: 'Moderator', avatar: 'M', posts: 856, reputation: 750, role: 'Модератор', isOnline: true },
-  { id: 3, username: 'Helper_Alex', avatar: 'HA', posts: 445, reputation: 520, role: 'Хелпер', isOnline: false },
-  { id: 4, username: 'Player123', avatar: 'P1', posts: 234, reputation: 180, role: 'Игрок', isOnline: true },
-  { id: 5, username: 'BugHunter', avatar: 'BH', posts: 189, reputation: 145, role: 'Игрок', isOnline: false },
-  { id: 6, username: 'NewPlayer', avatar: 'NP', posts: 12, reputation: 15, role: 'Новичок', isOnline: true },
-];
+const mockUsers: User[] = [];
 
 export default function Index() {
   const [currentPage, setCurrentPage] = useState<Page>('home');
