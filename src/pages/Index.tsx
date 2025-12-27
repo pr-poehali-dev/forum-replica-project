@@ -4,8 +4,13 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-type Page = 'home' | 'users' | 'rules';
+type Page = 'home' | 'users' | 'rules' | 'topic';
 
 interface Topic {
   id: number;
@@ -16,6 +21,16 @@ interface Topic {
   views: number;
   lastPost: string;
   isPinned?: boolean;
+  content?: string;
+}
+
+interface Comment {
+  id: number;
+  author: string;
+  avatar: string;
+  content: string;
+  timestamp: string;
+  role: string;
 }
 
 interface User {
@@ -47,6 +62,17 @@ const mockUsers: User[] = [
 
 export default function Index() {
   const [currentPage, setCurrentPage] = useState<Page>('home');
+  const [topics, setTopics] = useState<Topic[]>(mockTopics);
+  const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
+  const [comments, setComments] = useState<Comment[]>([
+    { id: 1, author: 'Admin', avatar: 'A', content: 'Добро пожаловать в новую версию сервера! Мы добавили множество новых функций.', timestamp: '2 часа назад', role: 'Администратор' },
+    { id: 2, author: 'Player123', avatar: 'P1', content: 'Отличное обновление! Спасибо разработчикам!', timestamp: '1 час назад', role: 'Игрок' },
+  ]);
+  const [newTopicTitle, setNewTopicTitle] = useState('');
+  const [newTopicCategory, setNewTopicCategory] = useState('Обсуждения');
+  const [newTopicContent, setNewTopicContent] = useState('');
+  const [newComment, setNewComment] = useState('');
+  const [isCreateTopicOpen, setIsCreateTopicOpen] = useState(false);
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
@@ -54,6 +80,52 @@ export default function Index() {
       case 'Модератор': return 'bg-purple-600';
       case 'Хелпер': return 'bg-blue-600';
       default: return 'bg-gray-600';
+    }
+  };
+
+  const handleCreateTopic = () => {
+    if (newTopicTitle.trim() && newTopicContent.trim()) {
+      const newTopic: Topic = {
+        id: topics.length + 1,
+        title: newTopicTitle,
+        author: 'Вы',
+        category: newTopicCategory,
+        replies: 0,
+        views: 0,
+        lastPost: 'Только что',
+        content: newTopicContent,
+      };
+      setTopics([newTopic, ...topics]);
+      setNewTopicTitle('');
+      setNewTopicContent('');
+      setNewTopicCategory('Обсуждения');
+      setIsCreateTopicOpen(false);
+    }
+  };
+
+  const handleOpenTopic = (topic: Topic) => {
+    setSelectedTopic(topic);
+    setCurrentPage('topic');
+  };
+
+  const handleAddComment = () => {
+    if (newComment.trim() && selectedTopic) {
+      const comment: Comment = {
+        id: comments.length + 1,
+        author: 'Вы',
+        avatar: 'В',
+        content: newComment,
+        timestamp: 'Только что',
+        role: 'Игрок',
+      };
+      setComments([...comments, comment]);
+      setNewComment('');
+      
+      setTopics(topics.map(t => 
+        t.id === selectedTopic.id 
+          ? { ...t, replies: t.replies + 1, lastPost: 'Только что' }
+          : t
+      ));
     }
   };
 
@@ -107,10 +179,59 @@ export default function Index() {
           <div className="space-y-4">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-foreground">Последние темы</h2>
-              <Button className="gap-2">
-                <Icon name="Plus" size={18} />
-                Создать тему
-              </Button>
+              <Dialog open={isCreateTopicOpen} onOpenChange={setIsCreateTopicOpen}>
+                <DialogTrigger asChild>
+                  <Button className="gap-2">
+                    <Icon name="Plus" size={18} />
+                    Создать тему
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[600px]">
+                  <DialogHeader>
+                    <DialogTitle>Создать новую тему</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 pt-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="title">Заголовок темы</Label>
+                      <Input
+                        id="title"
+                        placeholder="Введите заголовок..."
+                        value={newTopicTitle}
+                        onChange={(e) => setNewTopicTitle(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="category">Категория</Label>
+                      <Select value={newTopicCategory} onValueChange={setNewTopicCategory}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Новости">Новости</SelectItem>
+                          <SelectItem value="Обсуждения">Обсуждения</SelectItem>
+                          <SelectItem value="Гайды">Гайды</SelectItem>
+                          <SelectItem value="Баги">Баги</SelectItem>
+                          <SelectItem value="Правила">Правила</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="content">Содержание</Label>
+                      <Textarea
+                        id="content"
+                        placeholder="Напишите содержание темы..."
+                        value={newTopicContent}
+                        onChange={(e) => setNewTopicContent(e.target.value)}
+                        rows={6}
+                      />
+                    </div>
+                    <Button onClick={handleCreateTopic} className="w-full gap-2">
+                      <Icon name="Send" size={18} />
+                      Опубликовать тему
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
 
             <Card className="bg-card/50 border-border overflow-hidden">
@@ -121,9 +242,10 @@ export default function Index() {
                 <div className="col-span-2 text-right">Последний пост</div>
               </div>
 
-              {mockTopics.map((topic) => (
+              {topics.map((topic) => (
                 <div
                   key={topic.id}
+                  onClick={() => handleOpenTopic(topic)}
                   className={`grid grid-cols-12 gap-4 p-4 border-b border-border last:border-b-0 hover:bg-muted/30 transition-colors cursor-pointer ${
                     topic.isPinned ? 'bg-muted/20' : ''
                   }`}
@@ -225,6 +347,85 @@ export default function Index() {
                   </div>
                 </Card>
               ))}
+            </div>
+          </div>
+        )}
+
+        {currentPage === 'topic' && selectedTopic && (
+          <div className="space-y-6">
+            <Button
+              variant="ghost"
+              onClick={() => setCurrentPage('home')}
+              className="gap-2 mb-4"
+            >
+              <Icon name="ArrowLeft" size={18} />
+              Назад к темам
+            </Button>
+
+            <Card className="p-8 bg-card/50 border-border">
+              <div className="flex items-start justify-between mb-6">
+                <div>
+                  <h1 className="text-3xl font-bold text-foreground mb-3">{selectedTopic.title}</h1>
+                  <div className="flex items-center gap-3">
+                    <Badge variant="secondary">{selectedTopic.category}</Badge>
+                    <span className="text-sm text-muted-foreground">от {selectedTopic.author}</span>
+                    <span className="text-sm text-muted-foreground">• {selectedTopic.views} просмотров</span>
+                  </div>
+                </div>
+                {selectedTopic.isPinned && (
+                  <Icon name="Pin" size={24} className="text-primary" />
+                )}
+              </div>
+
+              <div className="prose prose-invert max-w-none">
+                <p className="text-muted-foreground leading-relaxed">
+                  {selectedTopic.content || 'Содержимое темы...'}
+                </p>
+              </div>
+            </Card>
+
+            <div className="space-y-4">
+              <h2 className="text-2xl font-bold text-foreground">
+                Комментарии ({comments.length})
+              </h2>
+
+              {comments.map((comment) => (
+                <Card key={comment.id} className="p-6 bg-card/50 border-border">
+                  <div className="flex gap-4">
+                    <Avatar className="w-12 h-12 border-2 border-primary">
+                      <AvatarFallback className="bg-primary text-primary-foreground font-bold">
+                        {comment.avatar}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="font-bold text-foreground">{comment.author}</span>
+                        <Badge className={`${getRoleBadgeColor(comment.role)} text-xs`}>
+                          {comment.role}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">• {comment.timestamp}</span>
+                      </div>
+                      <p className="text-muted-foreground">{comment.content}</p>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+
+              <Card className="p-6 bg-card/50 border-border">
+                <h3 className="font-bold text-foreground mb-4">Написать комментарий</h3>
+                <div className="space-y-4">
+                  <Textarea
+                    placeholder="Ваш комментарий..."
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    rows={4}
+                  />
+                  <Button onClick={handleAddComment} className="gap-2">
+                    <Icon name="Send" size={18} />
+                    Отправить
+                  </Button>
+                </div>
+              </Card>
             </div>
           </div>
         )}
